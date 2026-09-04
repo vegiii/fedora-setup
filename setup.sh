@@ -45,18 +45,22 @@ dnf install -y \
 dnf install -y dnf-plugins-core
 
 # Install Google Chrome
-dnf config-manager --add-repo \
-    https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
+if [[ ! -f /etc/yum.repos.d/google-chrome.repo ]]; then
+    dnf config-manager --add-repo \
+        https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
+fi
 dnf install -y google-chrome-stable
+
+# Install Visual Studio Code
+if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
+    dnf config-manager --add-repo \
+        https://packages.microsoft.com/yumrepos/vscode/config.repo
+fi
+dnf install -y code
 
 # Install App Grid
 dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
-
-# Install Visual Studio Code
-dnf config-manager --add-repo \
-    https://packages.microsoft.com/yumrepos/vscode/config.repo
-dnf install -y code
 
 # Install DNF groups
 dnf install -y @multimedia @virtualization
@@ -121,3 +125,29 @@ FLATPAK_APPS=(
 )
 
 flatpak install -y flathub "${FLATPAK_APPS[@]}"
+
+# Configuration
+
+# Set the Plymouth boot splash theme and rebuild the initramfs
+dnf install -y plymouth-theme-spinner
+plymouth-set-default-theme spinner -R
+
+# Configure GRUB and rebuild its configuration
+sed -i 's/^GRUB_SAVEDEFAULT=.*/GRUB_SAVEDEFAULT=true/' /etc/default/grub
+grep -q '^GRUB_SAVEDEFAULT=' /etc/default/grub || \
+    echo 'GRUB_SAVEDEFAULT=true' >> /etc/default/grub
+sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=2/' /etc/default/grub
+grep -q '^GRUB_TIMEOUT=' /etc/default/grub || \
+    echo 'GRUB_TIMEOUT=2' >> /etc/default/grub
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# Set the system language and 24-hour time format
+localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
+
+# Mount the NAS storage share automatically when accessed
+mkdir -p /mnt/storage
+grep -qF '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' /etc/fstab || \
+    echo '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' >> /etc/fstab
+
+# Rename the root Btrfs filesystem
+btrfs filesystem label / fedora
