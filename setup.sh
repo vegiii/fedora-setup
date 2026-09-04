@@ -23,6 +23,10 @@ grep -q '^fastestmirror=' /etc/dnf/dnf.conf || \
 grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
     echo 'defaultyes=True' >> /etc/dnf/dnf.conf
 
+# Install firmware updates
+fwupdmgr refresh
+fwupdmgr update
+
 # Enable RPM Fusion
 dnf install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
@@ -32,20 +36,30 @@ dnf install -y \
 flatpak remote-add --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# Install firmware updates
-fwupdmgr refresh
-fwupdmgr update
-
-# Install DNF groups
-dnf install -y @multimedia @virtualization
-
 # Install Microsoft Core Fonts
 dnf install -y curl cabextract xorg-x11-font-utils fontconfig
 dnf install -y \
     https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
 
-# Install Papirus icon theme
-dnf install -y papirus-icon-theme
+# Install DNF repository tools
+dnf install -y dnf-plugins-core
+
+# Install Google Chrome
+dnf config-manager --add-repo \
+    https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
+dnf install -y google-chrome-stable
+
+# Install App Grid
+dnf copr enable -y scujas/plasma-applet-appgrid
+dnf install -y plasma-applet-appgrid
+
+# Install Visual Studio Code
+dnf config-manager --add-repo \
+    https://packages.microsoft.com/yumrepos/vscode/config.repo
+dnf install -y code
+
+# Install DNF groups
+dnf install -y @multimedia @virtualization
 
 # Install DNF applications
 DNF_PACKAGES=(
@@ -88,6 +102,7 @@ DNF_PACKAGES=(
     pam-kwallet
     plasma-workspace-wallpapers
     bash-color-prompt
+    papirus-icon-theme
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
