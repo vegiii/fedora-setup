@@ -35,3 +35,63 @@ flatpak remote-add --if-not-exists \
 # Install firmware updates
 fwupdmgr refresh
 fwupdmgr update
+
+# Install DNF applications
+DNF_PACKAGES=(
+    # System and CLI tools
+    btop
+    rsync
+    tree
+    wget
+    curl
+    micro
+    lm_sensors
+    fastfetch
+
+    # Applications
+    discord
+    steam
+    firefox
+    dolphin
+    kwrite
+    mangohud
+    haruna
+    gwenview
+    okular
+    ark
+    spectacle
+    kcalc
+    filelight
+    plasma-discover
+    kde-partitionmanager
+
+    # KDE components
+    plasma-nm
+    bluedevil
+    kio-admin
+    kde-gtk-config
+    kio-extras
+    plasma-discover-flatpak
+    libappindicator-gtk3
+    langpacks-nb
+    pam-kwallet
+    plasma-workspace-wallpapers
+    bash-color-prompt
+)
+
+dnf install -y "${DNF_PACKAGES[@]}"
+
+# Install Flatpak applications
+FLATPAK_APPS=(
+    com.spotify.Client
+    md.obsidian.Obsidian
+    net.nokyan.Resources
+    org.onlyoffice.desktopeditors
+    it.mijorus.gearlever
+    com.github.tchx84.Flatseal
+    com.vysp3r.ProtonPlus
+    org.prismlauncher.PrismLauncher
+    xyz.z3ntu.razergenie
+)
+
+flatpak install -y flathub "${FLATPAK_APPS[@]}"
