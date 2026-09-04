@@ -36,6 +36,17 @@ flatpak remote-add --if-not-exists \
 fwupdmgr refresh
 fwupdmgr update
 
+# Install DNF groups
+dnf install -y @multimedia @virtualization
+
+# Install Microsoft Core Fonts
+dnf install -y curl cabextract xorg-x11-font-utils fontconfig
+dnf install -y \
+    https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
+
+# Install Papirus icon theme
+dnf install -y papirus-icon-theme
+
 # Install DNF applications
 DNF_PACKAGES=(
     # System and CLI tools
