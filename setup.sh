@@ -73,24 +73,13 @@ dnf install -y @multimedia @virtualization
 
 # Install DNF applications
 DNF_PACKAGES=(
-    # System and CLI tools
-    btop
-    rsync
-    tree
-    wget
-    curl
-    micro
-    lm_sensors
-    fastfetch
-
-    # Applications
-    firefox
-    steam
-    mangohud
-    discord
-    haruna
-    gwenview
-
+    # Core KDE Plasma
+    plasma-desktop
+    plasma-login-manager
+    kscreen
+    konsole
+    dolphin
+    kwrite
 
     # KDE components
     plasma-nm
