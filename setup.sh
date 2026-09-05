@@ -12,11 +12,7 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Identify the user whose KDE settings will be configured
-if [[ -z ${SUDO_USER:-} || $SUDO_USER == root ]]; then
-    echo "Run this script with sudo from your user account."
-    exit 1
-fi
+# Find the home directory of the user who invoked sudo
 USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 
 # ============================================================================
@@ -68,31 +64,6 @@ dnf install -y \
 # ============================================================================
 # SOFTWARE INSTALLATION
 # ============================================================================
-
-# Install Microsoft Core Fonts from Terra
-dnf install -y ms-core-fonts
-
-# Install Google Chrome
-dnf install -y fedora-workstation-repositories
-dnf config-manager setopt google-chrome.enabled=1
-dnf install -y google-chrome-stable
-
-# Install Visual Studio Code and verify the Microsoft signing key
-if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
-    dnf config-manager addrepo \
-        --from-repofile=https://packages.microsoft.com/yumrepos/vscode/config.repo
-fi
-rpm --import https://packages.microsoft.com/keys/microsoft.asc
-dnf config-manager setopt vscode-yum.gpgcheck=1 \
-    vscode-yum.gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-dnf install -y code
-
-# Install App Grid
-dnf copr enable -y scujas/plasma-applet-appgrid
-dnf install -y plasma-applet-appgrid
-
-# Install DNF groups
-dnf install -y @multimedia @virtualization
 
 # Install DNF applications
 DNF_PACKAGES=(
@@ -148,6 +119,31 @@ DNF_PACKAGES=(
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
+
+# Install Microsoft Core Fonts from Terra
+dnf install -y ms-core-fonts
+
+# Install Google Chrome
+dnf install -y fedora-workstation-repositories
+dnf config-manager setopt google-chrome.enabled=1
+dnf install -y google-chrome-stable
+
+# Install Visual Studio Code and verify the Microsoft signing key
+if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
+    dnf config-manager addrepo \
+        --from-repofile=https://packages.microsoft.com/yumrepos/vscode/config.repo
+fi
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+dnf config-manager setopt vscode-yum.gpgcheck=1 \
+    vscode-yum.gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+dnf install -y code
+
+# Install App Grid
+dnf copr enable -y scujas/plasma-applet-appgrid
+dnf install -y plasma-applet-appgrid
+
+# Install DNF groups
+dnf install -y @multimedia @virtualization
 
 # Install Flatpak applications
 FLATPAK_APPS=(
