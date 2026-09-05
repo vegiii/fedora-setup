@@ -8,8 +8,6 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# System setup
-
 # Set hostname
 hostnamectl set-hostname fedora
 
@@ -24,8 +22,9 @@ grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
     echo 'defaultyes=True' >> /etc/dnf/dnf.conf
 
 # Install firmware updates
-fwupdmgr refresh
-fwupdmgr update
+fwupdmgr refresh --force
+fwupdmgr get-updates
+fwupdmgr update --assume-yes
 
 # Enable RPM Fusion
 dnf install -y \
