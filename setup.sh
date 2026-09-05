@@ -8,6 +8,13 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
+# Identify the user whose KDE settings will be configured
+if [[ -z ${SUDO_USER:-} || $SUDO_USER == root ]]; then
+    echo "Run this script with sudo from your user account."
+    exit 1
+fi
+USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+
 # Set hostname
 hostnamectl set-hostname fedora
 
@@ -142,6 +149,17 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 # Set the system language and 24-hour time format
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
+
+# Configure AC power settings as the user to preserve file ownership
+runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.config"
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+    --group AC --group Display --key DimDisplayIdleTimeoutSec -- -1
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+    --group AC --group Display --key DimDisplayWhenIdle false
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+    --group AC --group Display --key TurnOffDisplayIdleTimeoutSec 600
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+    --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
 
 # Mount the NAS storage share automatically when accessed
 mkdir -p /mnt/storage
