@@ -66,6 +66,10 @@ if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
     dnf config-manager addrepo \
         --from-repofile=https://packages.microsoft.com/yumrepos/vscode/config.repo
 fi
+# Verify VS Code packages with Microsoft's signing key, including on reruns
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+dnf config-manager setopt vscode-yum.gpgcheck=1 \
+    vscode-yum.gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 dnf install -y code
 
 # Install App Grid
