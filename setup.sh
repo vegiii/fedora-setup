@@ -47,7 +47,7 @@ flatpak remote-add --if-not-exists \
 dnf install -y \
     --repofrompath 'terra-bootstrap,https://repos.fyralabs.com/terra$releasever' \
     --setopt='terra-bootstrap.gpgcheck=1' \
-    --setopt='terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc' \
+    --setopt="terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" \
     terra-release terra-gpg-keys
 
 # Install Microsoft Core Fonts from Terra
