@@ -113,6 +113,7 @@ DNF_PACKAGES=(
     plasma-workspace-wallpapers
     bash-color-prompt
     papirus-icon-theme
+    libayatana-appindicator-gtk3
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
