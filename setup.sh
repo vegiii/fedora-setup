@@ -73,6 +73,29 @@ dnf install -y @multimedia @virtualization
 
 # Install DNF applications
 DNF_PACKAGES=(
+    # Core KDE Plasma
+    plasma-desktop
+    plasma-login-manager
+    kscreen
+    konsole
+    dolphin
+    kwrite
+
+    # KDE components
+    plasma-nm
+    bluedevil
+    kio-admin
+    kde-gtk-config
+    kio-extras
+    plasma-discover-flatpak
+    libappindicator-gtk3
+    libayatana-appindicator-gtk3
+    langpacks-nb
+    pam-kwallet
+    plasma-workspace-wallpapers
+    bash-color-prompt
+    papirus-icon-theme
+
     # System and CLI tools
     btop
     rsync
@@ -83,37 +106,22 @@ DNF_PACKAGES=(
     lm_sensors
     fastfetch
 
-    # Applications
-    discord
-    steam
-    firefox
-    dolphin
-    kwrite
-    mangohud
-    haruna
-    gwenview
-    okular
+    # KDE applications
     ark
-    spectacle
+    okular
     kcalc
+    haruna
     filelight
+    gwenview
+    spectacle
     plasma-discover
     kde-partitionmanager
 
-    # KDE components
-    plasma-nm
-    bluedevil
-    kio-admin
-    kde-gtk-config
-    kio-extras
-    plasma-discover-flatpak
-    libappindicator-gtk3
-    langpacks-nb
-    pam-kwallet
-    plasma-workspace-wallpapers
-    bash-color-prompt
-    papirus-icon-theme
-    libayatana-appindicator-gtk3
+    # Applications
+    firefox
+    steam
+    mangohud
+    discord
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
