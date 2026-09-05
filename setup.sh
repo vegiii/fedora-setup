@@ -54,19 +54,19 @@ dnf install -y \
 dnf install -y ms-core-fonts
 
 # Install DNF repository tools
-dnf install -y dnf-plugins-core
+dnf install -y dnf5-plugins
 
 # Install Google Chrome
 if [[ ! -f /etc/yum.repos.d/google-chrome.repo ]]; then
-    dnf config-manager --add-repo \
-        https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
+    dnf config-manager addrepo \
+        --from-repofile=https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
 fi
 dnf install -y google-chrome-stable
 
 # Install Visual Studio Code
 if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
-    dnf config-manager --add-repo \
-        https://packages.microsoft.com/yumrepos/vscode/config.repo
+    dnf config-manager addrepo \
+        --from-repofile=https://packages.microsoft.com/yumrepos/vscode/config.repo
 fi
 dnf install -y code
 
