@@ -29,9 +29,9 @@ grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
     echo 'defaultyes=True' >> /etc/dnf/dnf.conf
 
 # Install firmware updates
-fwupdmgr refresh --force
-fwupdmgr get-updates
-fwupdmgr update --assume-yes
+# Exit code 2 means there is nothing to do (common in VMs)
+fwupdmgr refresh --force || [[ $? -eq 2 ]]
+fwupdmgr update --assume-yes || [[ $? -eq 2 ]]
 
 # Enable RPM Fusion
 dnf install -y \
