@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ============================================================================
+# initialization
+# ============================================================================
+
 set -e
 
 # Check that the script is running as root
@@ -14,6 +18,10 @@ if [[ -z ${SUDO_USER:-} || $SUDO_USER == root ]]; then
     exit 1
 fi
 USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+
+# ============================================================================
+# SYSTEM SETUP
+# ============================================================================
 
 # Set hostname
 hostnamectl set-hostname fedora
@@ -33,8 +41,15 @@ grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
 fwupdmgr refresh --force || [[ $? -eq 2 ]]
 fwupdmgr update --assume-yes || [[ $? -eq 2 ]]
 
+# ============================================================================
+# SOFTWARE SOURCES
+# ============================================================================
+
+# Install DNF repository tools
+dnf install -y dnf5-plugins
+
 # Enable RPM Fusion
- dnf install -y \
+dnf install -y \
     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
@@ -50,11 +65,12 @@ dnf install -y \
     --setopt="terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" \
     terra-release terra-gpg-keys
 
+# ============================================================================
+# SOFTWARE INSTALLATION
+# ============================================================================
+
 # Install Microsoft Core Fonts from Terra
 dnf install -y ms-core-fonts
-
-# Install DNF repository tools
-dnf install -y dnf5-plugins
 
 # Install Google Chrome
 dnf install -y fedora-workstation-repositories
@@ -148,7 +164,9 @@ FLATPAK_APPS=(
 
 flatpak install -y flathub "${FLATPAK_APPS[@]}"
 
-# Configuration
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
 
 # Set the Plymouth boot splash theme and rebuild the initramfs
 dnf install -y plymouth-theme-spinner
