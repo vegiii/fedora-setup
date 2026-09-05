@@ -57,10 +57,8 @@ dnf install -y ms-core-fonts
 dnf install -y dnf5-plugins
 
 # Install Google Chrome
-if [[ ! -f /etc/yum.repos.d/google-chrome.repo ]]; then
-    dnf config-manager addrepo \
-        --from-repofile=https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome.repo
-fi
+dnf install -y fedora-workstation-repositories
+dnf config-manager setopt google-chrome.enabled=1
 dnf install -y google-chrome-stable
 
 # Install Visual Studio Code
