@@ -49,17 +49,17 @@ dnf install -y \
     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 
-# Install Flatpak and configure Flathub
-dnf install -y flatpak
-flatpak remote-add --if-not-exists \
-    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
 # Enable Terra using its signing key for package verification
 dnf install -y \
     --repofrompath 'terra-bootstrap,https://repos.fyralabs.com/terra$releasever' \
     --setopt='terra-bootstrap.gpgcheck=1' \
     --setopt="terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" \
     terra-release terra-gpg-keys
+
+# Install Flatpak and configure Flathub
+dnf install -y flatpak
+flatpak remote-add --if-not-exists \
+    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # ============================================================================
 # SOFTWARE INSTALLATION
@@ -198,3 +198,11 @@ grep -qF '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,
 
 # Rename the root Btrfs filesystem
 btrfs filesystem label / fedora
+
+# Offer to reboot after setup completes
+if read -r -p "Setup complete. Reboot now? [Y/n] " REBOOT_REPLY &&
+    [[ -z $REBOOT_REPLY || ${REBOOT_REPLY,,} == y || ${REBOOT_REPLY,,} == yes ]]; then
+    systemctl reboot
+else
+    echo "Reboot skipped. You can reboot later to apply all changes."
+fi
