@@ -43,10 +43,15 @@ dnf install -y flatpak
 flatpak remote-add --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-# Install Microsoft Core Fonts
-dnf install -y curl cabextract xorg-x11-font-utils fontconfig
+# Enable Terra using its signing key for package verification
 dnf install -y \
-    https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
+    --repofrompath 'terra-bootstrap,https://repos.fyralabs.com/terra$releasever' \
+    --setopt='terra-bootstrap.gpgcheck=1' \
+    --setopt='terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc' \
+    terra-release terra-gpg-keys
+
+# Install Microsoft Core Fonts from Terra
+dnf install -y ms-core-fonts
 
 # Install DNF repository tools
 dnf install -y dnf-plugins-core
