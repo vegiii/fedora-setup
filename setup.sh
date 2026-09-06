@@ -282,6 +282,12 @@ btrfs filesystem label / fedora
 info "Setting graphical boot as default..."
 systemctl set-default graphical.target
 
+# Show asterisks when entering a sudo password
+info "Enabling sudo password feedback..."
+echo 'Defaults pwfeedback' > /etc/sudoers.d/pwfeedback
+chmod 0440 /etc/sudoers.d/pwfeedback
+visudo -cf /etc/sudoers.d/pwfeedback
+
 success "Configuration complete."
 
 # Offer to reboot after setup completes
