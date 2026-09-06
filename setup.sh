@@ -238,6 +238,12 @@ grep -q '^GRUB_TIMEOUT=' /etc/default/grub || \
 grub2-mkconfig -o /boot/grub2/grub.cfg
 success "GRUB configured."
 
+# Increase the per-user inotify instance limit.
+info "Setting the inotify instance limit to 512..."
+echo 'fs.inotify.max_user_instances = 512' > /etc/sysctl.d/90-inotify.conf
+sysctl -p /etc/sysctl.d/90-inotify.conf
+success "Inotify instance limit configured."
+
 # Set the system language and 24-hour time format
 info "Setting the system language and 24-hour time format..."
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
