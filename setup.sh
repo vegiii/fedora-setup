@@ -15,11 +15,10 @@ log() {
     printf '\033[%sm%s\033[0m\n' "$colour" "$message"
 }
 
-section() { printf '\n'; log '1;34' "=== $1 ==="; }
-info() { log 36 "$1"; }
-success() { log '1;35' "$1"; }
-notice() { log 33 "[NOTICE] $1"; }
-error() { log 31 "[ERROR] $1" >&2; }
+section() { printf '\n'; log '1;34' "=== $1 ==="; }          # Bold blue
+info() { log '1;33' "$1"; }                                  # Bold yellow
+success() { log '1;36' "$1"; }                               # Bold cyan
+error() { log '1;31' "[ERROR] $1" >&2; }                     # Bold red
 
 # Error handling
 report_error() {
@@ -277,10 +276,11 @@ success "Graphical boot configured."
 # Offer to reboot after setup completes
 elapsed=$SECONDS
 success "Setup completed successfully. ($((elapsed / 60))min, $((elapsed % 60))sec)"
-if read -r -p "Setup complete. Reboot now? [Y/n] " REBOOT_REPLY &&
+info "Setup complete. Reboot now? [Y/n]"
+if read -r REBOOT_REPLY &&
     [[ -z $REBOOT_REPLY || ${REBOOT_REPLY,,} == y || ${REBOOT_REPLY,,} == yes ]]; then
     info "Rebooting..."
     systemctl reboot
 else
-    notice "Reboot skipped. You can reboot later to apply all changes."
+    info "Reboot skipped. You can reboot later to apply all changes."
 fi
