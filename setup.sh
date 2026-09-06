@@ -6,10 +6,10 @@
 
 set -eE
 
-# Track total setup time.
+# Track total setup time
 SECONDS=0
 
-# Print coloured terminal messages.
+# Print coloured terminal messages
 log() {
     local colour=$1 message=$2
     printf '\033[%sm%s\033[0m\n' "$colour" "$message"
@@ -133,12 +133,11 @@ DNF_PACKAGES=(
     bash-color-prompt
     papirus-icon-theme
 
-    # System and CLI tools
+    # System tools
     btop
     rsync
     tree
     wget
-    curl
     micro
     lm_sensors
     fastfetch
@@ -181,7 +180,7 @@ dnf config-manager setopt google-chrome.enabled=1
 dnf install -y google-chrome-stable
 success "Google Chrome installed."
 
-# Install the official ChatGPT desktop app.
+# Install the official ChatGPT desktop app
 info "Installing ChatGPT..."
 dnf install -y \
     https://persistent.oaistatic.com/codex-app-prod/linux/rpm/latest/chatgpt.x86_64.rpm
@@ -205,7 +204,7 @@ dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
 success "App Grid installed."
 
-# Install the OpenRazer driver and daemon for RazerGenie.
+# Install the OpenRazer driver and daemon for RazerGenie
 info "Installing OpenRazer..."
 dnf install -y kernel-devel
 if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
@@ -255,7 +254,7 @@ grep -q '^GRUB_TIMEOUT=' /etc/default/grub || \
 grub2-mkconfig -o /boot/grub2/grub.cfg
 success "GRUB configured."
 
-# Increase the per-user inotify instance limit.
+# Increase the per-user inotify instance limit
 info "Setting the inotify instance limit to 512..."
 echo 'fs.inotify.max_user_instances = 512' > /etc/sysctl.d/90-inotify.conf
 sysctl -p /etc/sysctl.d/90-inotify.conf
@@ -293,7 +292,7 @@ info "Setting the root Btrfs filesystem label to fedora..."
 btrfs filesystem label / fedora
 success "Root Btrfs filesystem label configured."
 
-# Boot into the graphical desktop by default.
+# Boot into the graphical desktop by default
 info "Setting graphical boot as default..."
 systemctl set-default graphical.target
 success "Graphical boot configured."
