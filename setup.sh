@@ -71,11 +71,11 @@ success "Firmware update checks completed."
 
 section "SOFTWARE SOURCES"
 # Enable RPM Fusion
-# info "Enabling RPM Fusion repositories..."
-# dnf install -y \
-#     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
-#     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
-# success "RPM Fusion repositories enabled."
+ info "Enabling RPM Fusion repositories..."
+ dnf install -y \
+     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
+ success "RPM Fusion repositories enabled."
 
 # Enable Terra repository
 info "Enabling Terra repository..."
