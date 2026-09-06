@@ -335,12 +335,6 @@ for pool in default ISOs; do
     virsh --connect qemu:///system pool-start "$pool"
 done
 
-# Mount the NAS storage share automatically when accessed
-info "Configuring automatic mounting of the NAS share..."
-mkdir -p /mnt/storage
-grep -qF '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' /etc/fstab || \
-    echo '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' >> /etc/fstab
-
 # Set the root filesystem label
 info "Setting the root filesystem label to fedora..."
 btrfs filesystem label / fedora
@@ -357,6 +351,49 @@ visudo -cf /etc/sudoers.d/pwfeedback
 
 success "Configuration complete."
 
+# ============================================================================
+# RESTORE PERSONAL CONFIGS
+# ============================================================================
+
+section "RESTORE PERSONAL CONFIGS"
+info "Restore personal configs and fstab entries from GitHub? [Y/n]"
+if read -r CONFIG_REPLY &&
+    [[ -z $CONFIG_REPLY || ${CONFIG_REPLY,,} == y || ${CONFIG_REPLY,,} == yes ]]; then
+    # Keep GitHub credentials and restored files owned by the user.
+    if ! sudo -H -u "$SUDO_USER" gh auth status --hostname github.com > /dev/null 2>&1; then
+        info "Complete GitHub login using the displayed code in a browser on another device."
+        sudo -H -u "$SUDO_USER" env GH_BROWSER=true \
+            gh auth login --hostname github.com --git-protocol https --web
+    fi
+    sudo -H -u "$SUDO_USER" gh auth setup-git --hostname github.com
+
+    CONFIG_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
+    sudo -H -u "$SUDO_USER" gh repo clone vegiii/fedora-configs "$CONFIG_DIR"
+
+    # Merge personal files without deleting unrelated files in the home directory.
+    sudo -H -u "$SUDO_USER" rsync -a \
+        "$CONFIG_DIR/.config" "$CONFIG_DIR/.local" "$CONFIG_DIR/.bashrc.d" "$USER_HOME/"
+
+    # Preserve system mounts and append only missing personal entries.
+    while IFS= read -r entry || [[ -n $entry ]]; do
+        read -r source mountpoint options <<< "$entry"
+        [[ -z $source || $source == \#* ]] && continue
+        mkdir -p -- "$mountpoint"
+        grep -qxF -- "$entry" /etc/fstab || printf '%s\n' "$entry" >> /etc/fstab
+    done < "$CONFIG_DIR/fstab-entries"
+    systemctl daemon-reload
+
+    sudo -H -u "$SUDO_USER" rm -rf -- "$CONFIG_DIR"
+    success "Personal configs restored."
+else
+    info "Personal config restoration skipped."
+fi
+
+# ============================================================================
+# REBOOT
+# ============================================================================
+
+section "REBOOT"
 # Offer to reboot after setup completes
 elapsed=$SECONDS
 success "Setup completed successfully. ($((elapsed / 60))min, $((elapsed % 60))sec)"
