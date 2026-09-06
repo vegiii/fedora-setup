@@ -331,10 +331,16 @@ if virsh --connect qemu:///system pool-info default > /dev/null 2>&1; then
 fi
 
 virsh --connect qemu:///system pool-define-as default dir --target "$USER_HOME/VMs/Images"
-virsh --connect qemu:///system pool-define-as ISOs dir --target "$USER_HOME/VMs/ISOs"
+# Keep the ISOs pool if it already exists.
+if ! virsh --connect qemu:///system pool-info ISOs > /dev/null 2>&1; then
+    virsh --connect qemu:///system pool-define-as ISOs dir --target "$USER_HOME/VMs/ISOs"
+fi
 for pool in default ISOs; do
     virsh --connect qemu:///system pool-autostart "$pool"
-    virsh --connect qemu:///system pool-start "$pool"
+    # Only start pools that are inactive.
+    if ! virsh --connect qemu:///system pool-list --name | grep -qx "$pool"; then
+        virsh --connect qemu:///system pool-start "$pool"
+    fi
 done
 
 # Set the root filesystem label
