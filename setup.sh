@@ -69,12 +69,6 @@ success "Firmware update checks completed."
 # SOFTWARE SOURCES
 # ============================================================================
 
-section "SOFTWARE SOURCES"
-# Install DNF repository tools
-info "Installing DNF repository tools..."
-dnf install -y dnf5-plugins
-success "DNF repository tools installed."
-
 # Enable RPM Fusion
 info "Enabling RPM Fusion repositories..."
 dnf install -y \
@@ -137,7 +131,6 @@ DNF_PACKAGES=(
     rsync
     tree
     wget
-    curl
     micro
     lm_sensors
     fastfetch
