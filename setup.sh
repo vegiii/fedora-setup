@@ -201,6 +201,24 @@ dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
 success "App Grid installed."
 
+# Install Plasma widgets from GitHub as the user.
+info "Installing Thermal Monitor and Weather Widget Plus..."
+WIDGET_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
+PLASMOID_DIR="$USER_HOME/.local/share/plasma/plasmoids"
+sudo -H -u "$SUDO_USER" mkdir -p "$PLASMOID_DIR"
+sudo -H -u "$SUDO_USER" git clone --depth 1 \
+    https://github.com/olib14/thermalmonitor.git "$WIDGET_DIR/thermalmonitor"
+sudo -H -u "$SUDO_USER" git clone --depth 1 \
+    https://github.com/tully-t/weather-widget-plus.git "$WIDGET_DIR/weather-widget-plus"
+
+# Replace widget files on reruns; settings are stored separately by Plasma.
+sudo -H -u "$SUDO_USER" rsync -a --delete \
+    "$WIDGET_DIR/thermalmonitor/package/" "$PLASMOID_DIR/org.kde.olib.thermalmonitor/"
+sudo -H -u "$SUDO_USER" rsync -a --delete \
+    "$WIDGET_DIR/weather-widget-plus/weather.widget.plus/" "$PLASMOID_DIR/weather.widget.plus/"
+sudo -H -u "$SUDO_USER" rm -rf -- "$WIDGET_DIR"
+success "Plasma widgets installed."
+
 # Install the OpenRazer driver
 info "Installing OpenRazer..."
 dnf install -y kernel-devel
@@ -230,10 +248,10 @@ flatpak install -y flathub "${FLATPAK_APPS[@]}"
 success "Flatpak applications installed."
 
 # ============================================================================
-# CONFIGURATION
+# SYSTEM CONFIGURATION
 # ============================================================================
 
-section "CONFIGURATION"
+section "SYSTEM CONFIGURATION"
 # Set the Plymouth boot splash theme and rebuild the initramfs
 info "Configuring Plymouth theme..."
 dnf install -y plymouth-theme-spinner
@@ -258,6 +276,27 @@ sysctl -p /etc/sysctl.d/90-inotify.conf
 info "Setting the system language and 24-hour time format..."
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
 
+# Set the root filesystem label
+info "Setting the root filesystem label to fedora..."
+btrfs filesystem label / fedora
+
+# Boot into the graphical desktop by default
+info "Setting graphical boot as default..."
+systemctl set-default graphical.target
+
+# Show asterisks when entering a sudo password
+info "Enabling sudo password feedback..."
+echo 'Defaults pwfeedback' > /etc/sudoers.d/pwfeedback
+chmod 0440 /etc/sudoers.d/pwfeedback
+visudo -cf /etc/sudoers.d/pwfeedback
+
+success "System configuration complete."
+
+# ============================================================================
+# PLASMA CONFIGURATION
+# ============================================================================
+
+section "PLASMA CONFIGURATION"
 # Configure Plasma appearance at the next desktop login
 info "Configuring Fedora Dark, Papirus icons and wallpaper..."
 runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.local/bin" "$USER_HOME/.config/autostart"
@@ -310,6 +349,13 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
 
+success "Plasma configuration complete."
+
+# ============================================================================
+# VIRTUALIZATION CONFIGURATION
+# ============================================================================
+
+section "VIRTUALIZATION CONFIGURATION"
 # Configure libvirt storage pools
 info "Configuring libvirt storage pools..."
 # Start libvirt sockets before configuring storage pools.
@@ -343,21 +389,7 @@ for pool in default ISOs; do
     fi
 done
 
-# Set the root filesystem label
-info "Setting the root filesystem label to fedora..."
-btrfs filesystem label / fedora
-
-# Boot into the graphical desktop by default
-info "Setting graphical boot as default..."
-systemctl set-default graphical.target
-
-# Show asterisks when entering a sudo password
-info "Enabling sudo password feedback..."
-echo 'Defaults pwfeedback' > /etc/sudoers.d/pwfeedback
-chmod 0440 /etc/sudoers.d/pwfeedback
-visudo -cf /etc/sudoers.d/pwfeedback
-
-success "Configuration complete."
+success "Virtualization configuration complete."
 
 # ============================================================================
 # RESTORE PERSONAL CONFIGS
