@@ -126,6 +126,7 @@ DNF_PACKAGES=(
     plasma-workspace-wallpapers
     bash-color-prompt
     papirus-icon-theme
+    plasma-lookandfeel-fedora
 
     # System tools
     btop
@@ -255,6 +256,44 @@ sysctl -p /etc/sysctl.d/90-inotify.conf
 info "Setting the system language and 24-hour time format..."
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
 
+# Configure Plasma appearance at the next desktop login
+info "Configuring Fedora Dark, Papirus icons and wallpaper..."
+runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.local/bin" "$USER_HOME/.config/autostart"
+runuser -u "$SUDO_USER" -- tee "$USER_HOME/.local/bin/setup-plasma-appearance.sh" > /dev/null <<'EOF'
+#!/bin/bash
+set -e
+
+# Apply the global theme before overriding its icons and wallpaper
+plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
+/usr/libexec/plasma-changeicons Papirus
+plasma-apply-wallpaperimage /usr/share/wallpapers/DarkestHour/contents/images/2560x1600.jpg
+
+# Stop running at login once all settings have been applied
+rm -- "$HOME/.config/autostart/setup-plasma-appearance.desktop" "$0"
+EOF
+runuser -u "$SUDO_USER" -- tee "$USER_HOME/.config/autostart/setup-plasma-appearance.desktop" > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Set up Plasma appearance
+Exec=/bin/bash "$USER_HOME/.local/bin/setup-plasma-appearance.sh"
+OnlyShowIn=KDE;
+Terminal=false
+X-KDE-autostart-after=panel
+EOF
+
+# Set the lock screen and login screen wallpaper before the first login
+info "Setting the lock screen and login screen wallpaper..."
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
+    --group Greeter --key WallpaperPlugin org.kde.image
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
+    --group Greeter --group Wallpaper --group org.kde.image --group General \
+    --key Image file:///usr/share/wallpapers/DarkestHour/
+kwriteconfig6 --file /etc/plasmalogin.conf \
+    --group Greeter --key WallpaperPlugin org.kde.image
+kwriteconfig6 --file /etc/plasmalogin.conf \
+    --group Greeter --group Wallpaper --group org.kde.image --group General \
+    --key Image file:///usr/share/wallpapers/DarkestHour/
+
 # Configure Plasma power management as the user to preserve file ownership
 info "Configuring Plasma power management for $SUDO_USER..."
 runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.config"
@@ -276,7 +315,7 @@ grep -qF '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,
     echo '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' >> /etc/fstab
 
 # Set the root filesystem label
-info "Setting the root Btrfs filesystem label to fedora..."
+info "Setting the root filesystem label to fedora..."
 btrfs filesystem label / fedora
 
 # Boot into the graphical desktop by default
