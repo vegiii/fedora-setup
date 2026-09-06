@@ -69,6 +69,7 @@ success "Firmware update checks completed."
 # SOFTWARE SOURCES
 # ============================================================================
 
+section "SOFTWARE SOURCES"
 # Enable RPM Fusion
 info "Enabling RPM Fusion repositories..."
 dnf install -y \
