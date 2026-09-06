@@ -137,6 +137,7 @@ DNF_PACKAGES=(
     rsync
     tree
     wget
+    curl
     micro
     lm_sensors
     fastfetch
