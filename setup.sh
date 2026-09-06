@@ -253,6 +253,8 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key TurnOffDisplayIdleTimeoutSec 600
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+    --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
+runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
 success "KDE AC power settings configured."
 
