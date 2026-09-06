@@ -129,6 +129,8 @@ DNF_PACKAGES=(
     plasma-lookandfeel-fedora
 
     # System tools
+    acl
+    policycoreutils-python-utils
     btop
     rsync
     tree
@@ -307,6 +309,31 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
     --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
+
+# Configure libvirt storage pools
+info "Configuring libvirt storage pools..."
+runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
+
+# Allow system QEMU to access VM storage inside the user's home
+setfacl -m u:qemu:--x "$USER_HOME" "$USER_HOME/VMs"
+setfacl -m u:qemu:r-x "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
+semanage fcontext -a -t virt_image_t "$USER_HOME/VMs(/.*)?"
+restorecon -R "$USER_HOME/VMs"
+
+# Remove Fedora's default pool if present
+if virsh --connect qemu:///system pool-list --name | grep -qx default; then
+    virsh --connect qemu:///system pool-destroy default
+fi
+if virsh --connect qemu:///system pool-info default > /dev/null 2>&1; then
+    virsh --connect qemu:///system pool-undefine default
+fi
+
+virsh --connect qemu:///system pool-define-as default dir --target "$USER_HOME/VMs/Images"
+virsh --connect qemu:///system pool-define-as ISOs dir --target "$USER_HOME/VMs/ISOs"
+for pool in default ISOs; do
+    virsh --connect qemu:///system pool-autostart "$pool"
+    virsh --connect qemu:///system pool-start "$pool"
+done
 
 # Mount the NAS storage share automatically when accessed
 info "Configuring automatic mounting of the NAS share..."
