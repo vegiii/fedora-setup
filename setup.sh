@@ -9,7 +9,7 @@ set -eE
 # Track total setup time
 SECONDS=0
 
-# Print coloured terminal messages
+# Terminal output
 log() {
     local colour=$1 message=$2
     printf '\033[%sm%s\033[0m\n' "$colour" "$message"
@@ -48,7 +48,7 @@ hostnamectl set-hostname fedora
 success "Hostname configured."
 
 # Optimize DNF
-info "Configuring DNF download settings..."
+info "Configuring DNF settings..."
 grep -q '^max_parallel_downloads=' /etc/dnf/dnf.conf || \
     echo 'max_parallel_downloads=10' >> /etc/dnf/dnf.conf
 
@@ -60,8 +60,7 @@ grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
 success "DNF settings configured."
 
 # Install firmware updates
-info "Checking for and applying firmware updates..."
-# Exit code 2 means there is nothing to do (common in VMs)
+info "Checking for firmware updates..."
 fwupdmgr refresh --force || [[ $? -eq 2 ]]
 fwupdmgr update --assume-yes || [[ $? -eq 2 ]]
 success "Firmware update checks completed."
@@ -83,8 +82,8 @@ dnf install -y \
     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 success "RPM Fusion repositories enabled."
 
-# Enable Terra using its signing key for package verification
-info "Enabling Terra with signature verification..."
+# Enable Terra repository
+info "Enabling Terra repository..."
 dnf install -y \
     --repofrompath 'terra-bootstrap,https://repos.fyralabs.com/terra$releasever' \
     --setopt='terra-bootstrap.gpgcheck=1' \
@@ -108,7 +107,7 @@ success "Flatpak and Flathub configured."
 
 section "SOFTWARE INSTALLATION"
 # Install DNF applications
-info "Installing KDE Plasma and DNF applications..."
+info "Installing DNF applications..."
 DNF_PACKAGES=(
     # Core KDE Plasma
     plasma-desktop
@@ -161,7 +160,7 @@ DNF_PACKAGES=(
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
-success "KDE Plasma and DNF applications installed."
+success "DNF applications installed."
 
 # Install DNF groups
 info "Installing multimedia and virtualization groups..."
@@ -174,20 +173,20 @@ dnf install -y ms-core-fonts
 success "Microsoft Core Fonts installed."
 
 # Install Google Chrome
-info "Configuring the Google Chrome repository and installing Chrome..."
+info "Enabling the Google Chrome repository and installing Chrome..."
 dnf install -y fedora-workstation-repositories
 dnf config-manager setopt google-chrome.enabled=1
 dnf install -y google-chrome-stable
 success "Google Chrome installed."
 
-# Install the official ChatGPT desktop app
+# Install ChatGPT
 info "Installing ChatGPT..."
 dnf install -y \
     https://persistent.oaistatic.com/codex-app-prod/linux/rpm/latest/chatgpt.x86_64.rpm
 success "ChatGPT installed."
 
-# Install Visual Studio Code and verify the Microsoft signing key
-info "Configuring the VS Code repository, importing its signing key and installing VS Code..."
+# Install Visual Studio Code
+info "Enabling the VS Code repository and installing VS Code..."
 if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
     dnf config-manager addrepo \
         --from-repofile=https://packages.microsoft.com/yumrepos/vscode/config.repo
@@ -204,7 +203,7 @@ dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
 success "App Grid installed."
 
-# Install the OpenRazer driver and daemon for RazerGenie
+# Install the OpenRazer driver
 info "Installing OpenRazer..."
 dnf install -y kernel-devel
 if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
@@ -213,10 +212,10 @@ if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
 fi
 dnf install -y openrazer-meta
 usermod -aG plugdev "$SUDO_USER"
-success "OpenRazer installed."
+success "OpenRazer installed and $SUDO_USER added to plugdev."
 
 # Install Flatpak applications
-info "Installing Flatpak applications from Flathub..."
+info "Installing Flatpak applications..."
 FLATPAK_APPS=(
     com.spotify.Client
     md.obsidian.Obsidian
@@ -261,12 +260,12 @@ sysctl -p /etc/sysctl.d/90-inotify.conf
 success "Inotify instance limit configured."
 
 # Set the system language and 24-hour time format
-info "Setting the system language and 24-hour time format..."
+info "Setting the system language and time format..."
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
-success "Language and time format configured."
+success "System language and time format configured."
 
-# Configure AC power settings as the user to preserve file ownership
-info "Configuring KDE AC power settings for $SUDO_USER..."
+# Configure Plasma power management as the user to preserve file ownership
+info "Configuring Plasma power management for $SUDO_USER..."
 runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.config"
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key DimDisplayIdleTimeoutSec -- -1
@@ -278,7 +277,7 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
     --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
-success "KDE AC power settings configured."
+success "Plasma power management configured."
 
 # Mount the NAS storage share automatically when accessed
 info "Configuring automatic mounting of the NAS share..."
