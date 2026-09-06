@@ -269,6 +269,11 @@ info "Setting the root Btrfs filesystem label to fedora..."
 btrfs filesystem label / fedora
 success "Root Btrfs filesystem label configured."
 
+# Boot into the graphical desktop by default.
+info "Setting graphical boot as default..."
+systemctl set-default graphical.target
+success "Graphical boot configured."
+
 # Offer to reboot after setup completes
 elapsed=$SECONDS
 success "Setup completed successfully. ($((elapsed / 60))min, $((elapsed % 60))sec)"
