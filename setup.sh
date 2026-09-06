@@ -129,13 +129,13 @@ DNF_PACKAGES=(
     plasma-lookandfeel-fedora
 
     # System tools
-    acl
-    policycoreutils-python-utils
+    gh
     btop
     rsync
     tree
     wget
     micro
+    acl
     lm_sensors
     fastfetch
 
