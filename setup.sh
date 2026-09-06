@@ -312,6 +312,8 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
 
 # Configure libvirt storage pools
 info "Configuring libvirt storage pools..."
+# Start libvirt sockets before configuring storage pools.
+systemctl enable --now virtqemud.socket virtstoraged.socket
 runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
 
 # Allow system QEMU to access VM storage inside the user's home
