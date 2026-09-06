@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================================================
-# initialization
+# INITIALIZATION
 # ============================================================================
 
 set -eE
@@ -47,7 +47,7 @@ info "Setting hostname to fedora..."
 hostnamectl set-hostname fedora
 success "Hostname configured."
 
-# Optimize DNF
+# Configure DNF
 info "Configuring DNF settings..."
 grep -q '^max_parallel_downloads=' /etc/dnf/dnf.conf || \
     echo 'max_parallel_downloads=10' >> /etc/dnf/dnf.conf
@@ -60,7 +60,7 @@ grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
 success "DNF settings configured."
 
 # Install firmware updates
-info "Checking for firmware updates..."
+info "Checking for and applying firmware updates..."
 fwupdmgr refresh --force || [[ $? -eq 2 ]]
 fwupdmgr update --assume-yes || [[ $? -eq 2 ]]
 success "Firmware update checks completed."
@@ -106,8 +106,8 @@ success "Flatpak and Flathub configured."
 # ============================================================================
 
 section "SOFTWARE INSTALLATION"
-# Install DNF applications
-info "Installing DNF applications..."
+# Install DNF packages
+info "Installing DNF packages..."
 DNF_PACKAGES=(
     # Core KDE Plasma
     plasma-desktop
@@ -160,7 +160,7 @@ DNF_PACKAGES=(
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
-success "DNF applications installed."
+success "DNF packages installed."
 
 # Install DNF groups
 info "Installing multimedia and virtualization groups..."
@@ -237,10 +237,9 @@ success "Flatpak applications installed."
 
 section "CONFIGURATION"
 # Set the Plymouth boot splash theme and rebuild the initramfs
-info "Setting the Plymouth theme and rebuilding the initramfs..."
+info "Configuring Plymouth theme..."
 dnf install -y plymouth-theme-spinner
 plymouth-set-default-theme spinner -R
-success "Plymouth theme configured and initramfs rebuilt."
 
 # Configure GRUB and rebuild its configuration
 info "Configuring GRUB and rebuilding its configuration..."
@@ -251,18 +250,15 @@ sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=2/' /etc/default/grub
 grep -q '^GRUB_TIMEOUT=' /etc/default/grub || \
     echo 'GRUB_TIMEOUT=2' >> /etc/default/grub
 grub2-mkconfig -o /boot/grub2/grub.cfg
-success "GRUB configured."
 
 # Increase the per-user inotify instance limit
 info "Setting the inotify instance limit to 512..."
 echo 'fs.inotify.max_user_instances = 512' > /etc/sysctl.d/90-inotify.conf
 sysctl -p /etc/sysctl.d/90-inotify.conf
-success "Inotify instance limit configured."
 
 # Set the system language and 24-hour time format
-info "Setting the system language and time format..."
+info "Setting the system language and 24-hour time format..."
 localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
-success "System language and time format configured."
 
 # Configure Plasma power management as the user to preserve file ownership
 info "Configuring Plasma power management for $SUDO_USER..."
@@ -277,29 +273,27 @@ runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc
     --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
 runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
-success "Plasma power management configured."
 
 # Mount the NAS storage share automatically when accessed
 info "Configuring automatic mounting of the NAS share..."
 mkdir -p /mnt/storage
 grep -qF '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' /etc/fstab || \
     echo '192.168.50.20:/media/storage /mnt/storage nfs defaults,_netdev,nofail,x-systemd.automount 0 0' >> /etc/fstab
-success "NAS automount configured."
 
-# Rename the root Btrfs filesystem
+# Set the root filesystem label
 info "Setting the root Btrfs filesystem label to fedora..."
 btrfs filesystem label / fedora
-success "Root Btrfs filesystem label configured."
 
 # Boot into the graphical desktop by default
 info "Setting graphical boot as default..."
 systemctl set-default graphical.target
-success "Graphical boot configured."
+
+success "Configuration complete."
 
 # Offer to reboot after setup completes
 elapsed=$SECONDS
 success "Setup completed successfully. ($((elapsed / 60))min, $((elapsed % 60))sec)"
-info "Setup complete. Reboot now? [Y/n]"
+info "Reboot now? [Y/n]"
 if read -r REBOOT_REPLY &&
     [[ -z $REBOOT_REPLY || ${REBOOT_REPLY,,} == y || ${REBOOT_REPLY,,} == yes ]]; then
     info "Rebooting..."
