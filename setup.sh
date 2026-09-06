@@ -22,6 +22,7 @@ success() { log 32 OK "$1"; }
 notice() { log 33 NOTICE "$1"; }
 error() { log 31 ERROR "$1" >&2; }
 
+# Error handling
 report_error() {
     local status=$1 line=$2
     error "Setup failed at line $line (exit status $status)."
