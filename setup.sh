@@ -6,21 +6,20 @@
 
 set -eE
 
-# Use colours only when writing to a terminal.
+# Track total setup time.
+SECONDS=0
+
+# Print coloured terminal messages.
 log() {
-    local colour=$1 label=$2 message=$3
-    if [[ -t 1 && ${TERM:-dumb} != dumb && -z ${NO_COLOR+x} ]]; then
-        printf '\033[%sm[%s] %s\033[0m\n' "$colour" "$label" "$message"
-    else
-        printf '[%s] %s\n' "$label" "$message"
-    fi
+    local colour=$1 message=$2
+    printf '\033[%sm%s\033[0m\n' "$colour" "$message"
 }
 
-section() { printf '\n'; log '1;34' SECTION "=== $1 ==="; }
-info() { log 36 INFO "$1"; }
-success() { log 32 OK "$1"; }
-notice() { log 33 NOTICE "$1"; }
-error() { log 31 ERROR "$1" >&2; }
+section() { printf '\n'; log '1;34' "=== $1 ==="; }
+info() { log 36 "$1"; }
+success() { log '1;35' "$1"; }
+notice() { log 33 "[NOTICE] $1"; }
+error() { log 31 "[ERROR] $1" >&2; }
 
 # Error handling
 report_error() {
@@ -94,9 +93,12 @@ dnf install -y \
     terra-release terra-gpg-keys
 success "Terra repository enabled."
 
-# Install Flatpak and configure Flathub
+# Install Flatpak, remove the Fedora remote and configure Flathub
 info "Installing Flatpak and configuring Flathub..."
 dnf install -y flatpak
+if flatpak remotes --system --columns=name | grep -qx fedora; then
+    flatpak remote-delete --system fedora
+fi
 flatpak remote-add --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 success "Flatpak and Flathub configured."
@@ -268,7 +270,8 @@ btrfs filesystem label / fedora
 success "Root Btrfs filesystem label configured."
 
 # Offer to reboot after setup completes
-success "Setup completed successfully."
+elapsed=$SECONDS
+success "Setup completed successfully. ($((elapsed / 60))min, $((elapsed % 60))sec)"
 if read -r -p "Setup complete. Reboot now? [Y/n] " REBOOT_REPLY &&
     [[ -z $REBOOT_REPLY || ${REBOOT_REPLY,,} == y || ${REBOOT_REPLY,,} == yes ]]; then
     info "Rebooting..."
