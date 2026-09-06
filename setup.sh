@@ -181,6 +181,12 @@ dnf config-manager setopt google-chrome.enabled=1
 dnf install -y google-chrome-stable
 success "Google Chrome installed."
 
+# Install the official ChatGPT desktop app.
+info "Installing ChatGPT..."
+dnf install -y \
+    https://persistent.oaistatic.com/codex-app-prod/linux/rpm/latest/chatgpt.x86_64.rpm
+success "ChatGPT installed."
+
 # Install Visual Studio Code and verify the Microsoft signing key
 info "Configuring the VS Code repository, importing its signing key and installing VS Code..."
 if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
