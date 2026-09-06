@@ -52,9 +52,6 @@ info "Configuring DNF settings..."
 grep -q '^max_parallel_downloads=' /etc/dnf/dnf.conf || \
     echo 'max_parallel_downloads=10' >> /etc/dnf/dnf.conf
 
-grep -q '^fastestmirror=' /etc/dnf/dnf.conf || \
-    echo 'fastestmirror=True' >> /etc/dnf/dnf.conf
-
 grep -q '^defaultyes=' /etc/dnf/dnf.conf || \
     echo 'defaultyes=True' >> /etc/dnf/dnf.conf
 success "DNF settings configured."
@@ -71,11 +68,11 @@ success "Firmware update checks completed."
 
 section "SOFTWARE SOURCES"
 # Enable RPM Fusion
- info "Enabling RPM Fusion repositories..."
- dnf install -y \
-     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
-     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
- success "RPM Fusion repositories enabled."
+info "Enabling RPM Fusion repositories..."
+dnf install -y \
+    "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+    "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
+success "RPM Fusion repositories enabled."
 
 # Enable Terra repository
 info "Enabling Terra repository..."
@@ -299,8 +296,8 @@ success "System configuration complete."
 section "PLASMA CONFIGURATION"
 # Configure Plasma appearance at the next desktop login
 info "Configuring Fedora Dark, Papirus icons and wallpaper..."
-runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.local/bin" "$USER_HOME/.config/autostart"
-runuser -u "$SUDO_USER" -- tee "$USER_HOME/.local/bin/setup-plasma-appearance.sh" > /dev/null <<'EOF'
+sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/.local/bin" "$USER_HOME/.config/autostart"
+sudo -H -u "$SUDO_USER" tee "$USER_HOME/.local/bin/setup-plasma-appearance.sh" > /dev/null <<'EOF'
 #!/bin/bash
 set -e
 
@@ -312,7 +309,7 @@ plasma-apply-wallpaperimage /usr/share/wallpapers/DarkestHour/contents/images/25
 # Stop running at login once all settings have been applied
 rm -- "$HOME/.config/autostart/setup-plasma-appearance.desktop" "$0"
 EOF
-runuser -u "$SUDO_USER" -- tee "$USER_HOME/.config/autostart/setup-plasma-appearance.desktop" > /dev/null <<EOF
+sudo -H -u "$SUDO_USER" tee "$USER_HOME/.config/autostart/setup-plasma-appearance.desktop" > /dev/null <<EOF
 [Desktop Entry]
 Type=Application
 Name=Set up Plasma appearance
@@ -324,9 +321,9 @@ EOF
 
 # Set the lock screen and login screen wallpaper before the first login
 info "Setting the lock screen and login screen wallpaper..."
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
     --group Greeter --key WallpaperPlugin org.kde.image
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
     --group Greeter --group Wallpaper --group org.kde.image --group General \
     --key Image file:///usr/share/wallpapers/DarkestHour/
 kwriteconfig6 --file /etc/plasmalogin.conf \
@@ -337,16 +334,15 @@ kwriteconfig6 --file /etc/plasmalogin.conf \
 
 # Configure Plasma power management as the user to preserve file ownership
 info "Configuring Plasma power management for $SUDO_USER..."
-runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/.config"
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key DimDisplayIdleTimeoutSec -- -1
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key DimDisplayWhenIdle false
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key TurnOffDisplayIdleTimeoutSec 600
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
-runuser -u "$SUDO_USER" -- kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
 
 success "Plasma configuration complete."
@@ -360,7 +356,7 @@ section "VIRTUALIZATION CONFIGURATION"
 info "Configuring libvirt storage pools..."
 # Start libvirt sockets before configuring storage pools.
 systemctl enable --now virtqemud.socket virtstoraged.socket
-runuser -u "$SUDO_USER" -- mkdir -p "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
+sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
 
 # Allow system QEMU to access VM storage inside the user's home
 setfacl -m u:qemu:--x "$USER_HOME" "$USER_HOME/VMs"
