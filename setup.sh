@@ -164,6 +164,11 @@ DNF_PACKAGES=(
 dnf install -y "${DNF_PACKAGES[@]}"
 success "KDE Plasma and DNF applications installed."
 
+# Install DNF groups
+info "Installing multimedia and virtualization groups..."
+dnf install -y @multimedia @virtualization
+success "DNF groups installed."
+
 # Install Microsoft Core Fonts from Terra
 info "Installing Microsoft Core Fonts..."
 dnf install -y ms-core-fonts
@@ -194,10 +199,16 @@ dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
 success "App Grid installed."
 
-# Install DNF groups
-info "Installing multimedia and virtualization groups..."
-dnf install -y @multimedia @virtualization
-success "DNF groups installed."
+# Install the OpenRazer driver and daemon for RazerGenie.
+info "Installing OpenRazer..."
+dnf install -y kernel-devel
+if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
+    dnf config-manager addrepo \
+        --from-repofile=https://openrazer.github.io/hardware:razer.repo
+fi
+dnf install -y openrazer-meta
+usermod -aG plugdev "$SUDO_USER"
+success "OpenRazer installed."
 
 # Install Flatpak applications
 info "Installing Flatpak applications from Flathub..."
