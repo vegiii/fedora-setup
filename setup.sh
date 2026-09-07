@@ -198,6 +198,12 @@ dnf copr enable -y scujas/plasma-applet-appgrid
 dnf install -y plasma-applet-appgrid
 success "App Grid installed."
 
+# Install Headset Battery Indicator
+info "Enabling the Headset Battery Indicator repository and installing Headset Battery Indicator..."
+dnf copr enable -y ruflas/headset-battery-indicator
+dnf install -y headset-battery-indicator
+success "Headset Battery Indicator installed."
+
 # Install Plasma widgets from GitHub as the user.
 info "Installing Thermal Monitor and Weather Widget Plus..."
 WIDGET_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
@@ -226,6 +232,46 @@ fi
 dnf install -y openrazer-meta
 usermod -aG plugdev "$SUDO_USER"
 success "OpenRazer installed and $SUDO_USER added to plugdev."
+
+# Install and configure razerbat
+info "Installing razerbat..."
+dnf install -y dbus-libs tar gzip
+
+RAZERBAT_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
+sudo -H -u "$SUDO_USER" wget -q \
+    -O "$RAZERBAT_DIR/razerbat.tar.gz" \
+    https://github.com/Zenardi/razerbat/releases/download/v0.3.0/razerbat-v0.3.0-linux-x86_64.tar.gz
+
+printf '%s  %s\n' \
+    '3dc408ece0dc93183a5421ad4ad2041c9694f8ff555fd93ac2b4f89ed68380d4' \
+    "$RAZERBAT_DIR/razerbat.tar.gz" | sha256sum --check -
+
+sudo -H -u "$SUDO_USER" tar -xzf "$RAZERBAT_DIR/razerbat.tar.gz" \
+    -C "$RAZERBAT_DIR"
+
+sudo -H -u "$SUDO_USER" mkdir -p \
+    "$USER_HOME/.local/bin" \
+    "$USER_HOME/.local/share/razerbat" \
+    "$USER_HOME/.config/autostart"
+
+sudo -H -u "$SUDO_USER" install -m 0755 \
+    "$RAZERBAT_DIR/razerbat/razerbat" "$USER_HOME/.local/bin/razerbat"
+sudo -H -u "$SUDO_USER" rsync -a \
+    "$RAZERBAT_DIR/razerbat/icons/" "$USER_HOME/.local/share/razerbat/icons/"
+
+sudo -H -u "$SUDO_USER" tee \
+    "$USER_HOME/.config/autostart/razerbat.desktop" > /dev/null <<EOF
+[Desktop Entry]
+Type=Application
+Name=Razer Battery Indicator
+Exec="$USER_HOME/.local/bin/razerbat" "Razer DeathAdder V3 HyperSpeed (Wireless)"
+Icon=battery
+OnlyShowIn=KDE;
+Terminal=false
+EOF
+
+sudo -H -u "$SUDO_USER" rm -rf -- "$RAZERBAT_DIR"
+success "razerbat installed and configured to start at desktop login."
 
 # Install Flatpak applications
 info "Installing Flatpak applications..."
