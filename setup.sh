@@ -377,15 +377,15 @@ if read -r CONFIG_REPLY &&
     sudo -H -u "$SUDO_USER" gh repo clone vegiii/fedora-configs "$CONFIG_DIR"
 
     # Check the clone before restoring any files or mount entries.
-    if [[ ! -d $CONFIG_DIR/.config || ! -d $CONFIG_DIR/.local ||
-          ! -d $CONFIG_DIR/.bashrc.d || ! -f $CONFIG_DIR/fstab-entries ]]; then
+    if [[ ! -d $CONFIG_DIR/configs/.config || ! -d $CONFIG_DIR/configs/.local ||
+          ! -d $CONFIG_DIR/configs/.bashrc.d || ! -f $CONFIG_DIR/fstab-entries ]]; then
         error "Config repo is incomplete. Check the clone at $CONFIG_DIR."
         exit 1
     fi
 
     # Merge personal files without deleting unrelated files in the home directory.
     sudo -H -u "$SUDO_USER" rsync -a \
-        "$CONFIG_DIR/.config" "$CONFIG_DIR/.local" "$CONFIG_DIR/.bashrc.d" "$USER_HOME/"
+        "$CONFIG_DIR/configs/" "$USER_HOME/"
 
     # Preserve system mounts and append only missing personal entries.
     while IFS= read -r entry || [[ -n $entry ]]; do
