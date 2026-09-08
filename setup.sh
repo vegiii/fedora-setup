@@ -403,6 +403,22 @@ else
 fi
 
 # ============================================================================
+# NVIDIA DRIVER
+# ============================================================================
+
+section "NVIDIA DRIVER"
+info "Install NVIDIA driver? [Y/n]"
+if read -r NVIDIA_REPLY &&
+    [[ -z $NVIDIA_REPLY || ${NVIDIA_REPLY,,} == y || ${NVIDIA_REPLY,,} == yes ]]; then
+    info "Installing NVIDIA driver..."
+    dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda
+    akmods --force
+    success "NVIDIA driver installed."
+else
+    info "NVIDIA driver installation skipped."
+fi
+
+# ============================================================================
 # REBOOT
 # ============================================================================
 
