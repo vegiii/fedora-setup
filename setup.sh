@@ -205,8 +205,8 @@ dnf copr enable -y ruflas/headset-battery-indicator
 dnf install -y headset-battery-indicator
 success "Headset Battery Indicator installed."
 
-# Install Plasma widgets from GitHub as the user.
-info "Installing Thermal Monitor and Weather Widget Plus..."
+# Download Plasma widgets from GitHub
+info "Installing Plasma widgets..."
 WIDGET_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
 PLASMOID_DIR="$USER_HOME/.local/share/plasma/plasmoids"
 sudo -H -u "$SUDO_USER" mkdir -p "$PLASMOID_DIR"
@@ -214,12 +214,12 @@ sudo -H -u "$SUDO_USER" git clone --depth 1 \
     https://github.com/olib14/thermalmonitor.git "$WIDGET_DIR/thermalmonitor"
 sudo -H -u "$SUDO_USER" git clone --depth 1 \
     https://github.com/tully-t/weather-widget-plus.git "$WIDGET_DIR/weather-widget-plus"
-
-# Replace widget files on reruns; settings are stored separately by Plasma.
+# Install the downloaded widgets
 sudo -H -u "$SUDO_USER" rsync -a --delete \
     "$WIDGET_DIR/thermalmonitor/package/" "$PLASMOID_DIR/org.kde.olib.thermalmonitor/"
 sudo -H -u "$SUDO_USER" rsync -a --delete \
     "$WIDGET_DIR/weather-widget-plus/weather.widget.plus/" "$PLASMOID_DIR/weather.widget.plus/"
+# Remove temporary downloads
 sudo -H -u "$SUDO_USER" rm -rf -- "$WIDGET_DIR"
 success "Plasma widgets installed."
 
@@ -233,46 +233,6 @@ fi
 dnf install -y openrazer-meta
 usermod -aG plugdev "$SUDO_USER"
 success "OpenRazer installed and $SUDO_USER added to plugdev."
-
-# Install and configure razerbat
-info "Installing razerbat..."
-dnf install -y dbus-libs tar gzip
-
-RAZERBAT_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
-sudo -H -u "$SUDO_USER" wget -q \
-    -O "$RAZERBAT_DIR/razerbat.tar.gz" \
-    https://github.com/Zenardi/razerbat/releases/download/v0.3.0/razerbat-v0.3.0-linux-x86_64.tar.gz
-
-printf '%s  %s\n' \
-    '3dc408ece0dc93183a5421ad4ad2041c9694f8ff555fd93ac2b4f89ed68380d4' \
-    "$RAZERBAT_DIR/razerbat.tar.gz" | sha256sum --check -
-
-sudo -H -u "$SUDO_USER" tar -xzf "$RAZERBAT_DIR/razerbat.tar.gz" \
-    -C "$RAZERBAT_DIR"
-
-sudo -H -u "$SUDO_USER" mkdir -p \
-    "$USER_HOME/.local/bin" \
-    "$USER_HOME/.local/share/razerbat" \
-    "$USER_HOME/.config/autostart"
-
-sudo -H -u "$SUDO_USER" install -m 0755 \
-    "$RAZERBAT_DIR/razerbat/razerbat" "$USER_HOME/.local/bin/razerbat"
-sudo -H -u "$SUDO_USER" rsync -a \
-    "$RAZERBAT_DIR/razerbat/icons/" "$USER_HOME/.local/share/razerbat/icons/"
-
-sudo -H -u "$SUDO_USER" tee \
-    "$USER_HOME/.config/autostart/razerbat.desktop" > /dev/null <<EOF
-[Desktop Entry]
-Type=Application
-Name=Razer Battery Indicator
-Exec="$USER_HOME/.local/bin/razerbat" "Razer DeathAdder V3 HyperSpeed (Wireless)"
-Icon=battery
-OnlyShowIn=KDE;
-Terminal=false
-EOF
-
-sudo -H -u "$SUDO_USER" rm -rf -- "$RAZERBAT_DIR"
-success "razerbat installed and configured to start at desktop login."
 
 # Install Flatpak applications
 info "Installing Flatpak applications..."
@@ -324,15 +284,15 @@ localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
 info "Setting the root filesystem label to fedora..."
 btrfs filesystem label / fedora
 
-# Boot into the graphical desktop by default
-info "Setting graphical boot as default..."
-systemctl set-default graphical.target
-
 # Show asterisks when entering a sudo password
 info "Enabling sudo password feedback..."
 echo 'Defaults pwfeedback' > /etc/sudoers.d/pwfeedback
 chmod 0440 /etc/sudoers.d/pwfeedback
 visudo -cf /etc/sudoers.d/pwfeedback
+
+# Boot into the graphical desktop by default
+info "Setting graphical boot as default..."
+systemctl set-default graphical.target
 
 success "System configuration complete."
 
@@ -341,44 +301,6 @@ success "System configuration complete."
 # ============================================================================
 
 section "PLASMA CONFIGURATION"
-# Configure Plasma appearance at the next desktop login
-info "Configuring Fedora Dark, Papirus icons and wallpaper..."
-sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/.local/bin" "$USER_HOME/.config/autostart"
-sudo -H -u "$SUDO_USER" tee "$USER_HOME/.local/bin/setup-plasma-appearance.sh" > /dev/null <<'EOF'
-#!/bin/bash
-set -e
-
-# Apply the global theme before overriding its icons and wallpaper
-plasma-apply-lookandfeel -a org.fedoraproject.fedoradark.desktop
-/usr/libexec/plasma-changeicons Papirus
-plasma-apply-wallpaperimage /usr/share/wallpapers/DarkestHour/contents/images/2560x1600.jpg
-
-# Stop running at login once all settings have been applied
-rm -- "$HOME/.config/autostart/setup-plasma-appearance.desktop" "$0"
-EOF
-sudo -H -u "$SUDO_USER" tee "$USER_HOME/.config/autostart/setup-plasma-appearance.desktop" > /dev/null <<EOF
-[Desktop Entry]
-Type=Application
-Name=Set up Plasma appearance
-Exec=/bin/bash "$USER_HOME/.local/bin/setup-plasma-appearance.sh"
-OnlyShowIn=KDE;
-Terminal=false
-X-KDE-autostart-after=panel
-EOF
-
-# Set the lock screen and login screen wallpaper before the first login
-info "Setting the lock screen and login screen wallpaper..."
-sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
-    --group Greeter --key WallpaperPlugin org.kde.image
-sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/kscreenlockerrc" \
-    --group Greeter --group Wallpaper --group org.kde.image --group General \
-    --key Image file:///usr/share/wallpapers/DarkestHour/
-kwriteconfig6 --file /etc/plasmalogin.conf \
-    --group Greeter --key WallpaperPlugin org.kde.image
-kwriteconfig6 --file /etc/plasmalogin.conf \
-    --group Greeter --group Wallpaper --group org.kde.image --group General \
-    --key Image file:///usr/share/wallpapers/DarkestHour/
-
 # Configure Plasma power management as the user to preserve file ownership
 info "Configuring Plasma power management for $SUDO_USER..."
 sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
@@ -399,19 +321,20 @@ success "Plasma configuration complete."
 # ============================================================================
 
 section "VIRTUALIZATION CONFIGURATION"
-# Configure libvirt storage pools
+# Set up VM storage in ~/Documents/VMs
 info "Configuring libvirt storage pools..."
-# Start libvirt sockets before configuring storage pools.
+# Enable libvirt and create storage folders
 systemctl enable --now virtqemud.socket virtstoraged.socket
-sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
+sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/Documents/VMs/Images" "$USER_HOME/Documents/VMs/ISOs"
 
-# Allow system QEMU to access VM storage inside the user's home
-setfacl -m u:qemu:--x "$USER_HOME" "$USER_HOME/VMs"
-setfacl -m u:qemu:r-x "$USER_HOME/VMs/Images" "$USER_HOME/VMs/ISOs"
-semanage fcontext -a -t virt_image_t "$USER_HOME/VMs(/.*)?"
-restorecon -R "$USER_HOME/VMs"
+# Give QEMU access to the folders
+setfacl -m u:qemu:--x "$USER_HOME" "$USER_HOME/Documents" "$USER_HOME/Documents/VMs"
+setfacl -m u:qemu:r-x "$USER_HOME/Documents/VMs/Images" "$USER_HOME/Documents/VMs/ISOs"
+# Set SELinux labels for VM storage
+semanage fcontext -a -t virt_image_t "$USER_HOME/Documents/VMs(/.*)?"
+restorecon -R "$USER_HOME/Documents/VMs"
 
-# Remove Fedora's default pool if present
+# Replace the default pool with the Images folder
 if virsh --connect qemu:///system pool-list --name | grep -qx default; then
     virsh --connect qemu:///system pool-destroy default
 fi
@@ -419,14 +342,14 @@ if virsh --connect qemu:///system pool-info default > /dev/null 2>&1; then
     virsh --connect qemu:///system pool-undefine default
 fi
 
-virsh --connect qemu:///system pool-define-as default dir --target "$USER_HOME/VMs/Images"
-# Keep the ISOs pool if it already exists.
+virsh --connect qemu:///system pool-define-as default dir --target "$USER_HOME/Documents/VMs/Images"
+# Create the ISOs pool if missing
 if ! virsh --connect qemu:///system pool-info ISOs > /dev/null 2>&1; then
-    virsh --connect qemu:///system pool-define-as ISOs dir --target "$USER_HOME/VMs/ISOs"
+    virsh --connect qemu:///system pool-define-as ISOs dir --target "$USER_HOME/Documents/VMs/ISOs"
 fi
+# Enable autostart and start inactive pools
 for pool in default ISOs; do
     virsh --connect qemu:///system pool-autostart "$pool"
-    # Only start pools that are inactive.
     if ! virsh --connect qemu:///system pool-list --name | grep -qx "$pool"; then
         virsh --connect qemu:///system pool-start "$pool"
     fi
