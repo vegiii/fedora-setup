@@ -127,6 +127,7 @@ DNF_PACKAGES=(
 
     # System tools
     gh
+    bat
     btop
     rsync
     tree
