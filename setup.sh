@@ -294,13 +294,6 @@ visudo -cf /etc/sudoers.d/pwfeedback
 info "Setting graphical boot as default..."
 systemctl set-default graphical.target
 
-success "System configuration complete."
-
-# ============================================================================
-# PLASMA CONFIGURATION
-# ============================================================================
-
-section "PLASMA CONFIGURATION"
 # Configure Plasma power management as the user to preserve file ownership
 info "Configuring Plasma power management for $SUDO_USER..."
 sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
@@ -314,7 +307,7 @@ sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
 sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
 
-success "Plasma configuration complete."
+success "System configuration complete."
 
 # ============================================================================
 # VIRTUALIZATION CONFIGURATION
