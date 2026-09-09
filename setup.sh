@@ -153,6 +153,7 @@ DNF_PACKAGES=(
     steam
     mangohud
     discord
+    dropbox
 )
 
 dnf install -y "${DNF_PACKAGES[@]}"
@@ -174,6 +175,12 @@ dnf install -y fedora-workstation-repositories
 dnf config-manager setopt google-chrome.enabled=1
 dnf install -y google-chrome-stable
 success "Google Chrome installed."
+
+# Install TeamViewer
+info "Installing TeamViewer..."
+dnf install -y \
+    https://download.teamviewer.com/download/linux/teamviewer.x86_64.rpm
+success "TeamViewer installed."
 
 # Install ChatGPT
 info "Installing ChatGPT..."
