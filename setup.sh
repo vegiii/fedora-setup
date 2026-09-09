@@ -276,9 +276,28 @@ info "Setting the inotify instance limit to 512..."
 echo 'fs.inotify.max_user_instances = 512' > /etc/sysctl.d/90-inotify.conf
 sysctl -p /etc/sysctl.d/90-inotify.conf
 
-# Set the system language and 24-hour time format
-info "Setting the system language and 24-hour time format..."
-localectl set-locale LANG=en_US.UTF-8 LC_TIME=nb_NO.UTF-8
+# Use American English with Norwegian regional formats
+info "Setting American English and Norwegian regional formats..."
+LOCALE_SETTINGS=(
+    LANG=en_US.UTF-8
+    LC_ADDRESS=nb_NO.UTF-8
+    LC_MEASUREMENT=nb_NO.UTF-8
+    LC_MONETARY=nb_NO.UTF-8
+    LC_NAME=nb_NO.UTF-8
+    LC_NUMERIC=nb_NO.UTF-8
+    LC_PAPER=nb_NO.UTF-8
+    LC_TELEPHONE=nb_NO.UTF-8
+    LC_TIME=nb_NO.UTF-8
+)
+localectl set-locale "${LOCALE_SETTINGS[@]}"
+
+# Apply the same formats to Plasma while preserving user ownership
+for setting in "${LOCALE_SETTINGS[@]}"; do
+    sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/plasma-localerc" \
+        --group Formats --key "${setting%%=*}" "${setting#*=}"
+done
+sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/plasma-localerc" \
+    --group Translations --key LANGUAGE en_US
 
 # Set the root filesystem label
 info "Setting the root filesystem label to fedora..."
