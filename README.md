@@ -1,0 +1,8 @@
+To run:
+
+```bash
+sudo dnf install git -y
+git clone https://github.com/vegiii/fedora-setup.git
+cd fedora-setup
+sudo ./setup.sh
+```
