@@ -188,6 +188,12 @@ dnf install -y \
     https://persistent.oaistatic.com/codex-app-prod/linux/rpm/latest/chatgpt.x86_64.rpm
 success "ChatGPT installed."
 
+# Install Codex
+info "Installing Codex..."
+curl -fsSL https://chatgpt.com/codex/install.sh |
+    sudo -H -u "$SUDO_USER" env CODEX_NON_INTERACTIVE=1 sh
+success "Codex installed."
+
 # Install Visual Studio Code
 info "Enabling the VS Code repository and installing VS Code..."
 if [[ ! -f /etc/yum.repos.d/config.repo ]]; then
