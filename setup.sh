@@ -150,6 +150,7 @@ DNF_PACKAGES=(
 
     # Applications
     firefox
+    thunderbird
     steam
     mangohud
     discord
