@@ -1,4 +1,8 @@
-To run:
+# Fedora setup
+
+Personal setup script for Fedora KDE.
+
+## Run the setup
 
 ```bash
 sudo dnf install git -y

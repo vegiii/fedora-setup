@@ -136,6 +136,7 @@ DNF_PACKAGES=(
     acl
     lm_sensors
     fastfetch
+    input-remapper
 
     # KDE applications
     ark
@@ -264,6 +265,22 @@ FLATPAK_APPS=(
 
 flatpak install -y flathub "${FLATPAK_APPS[@]}"
 success "Flatpak applications installed."
+
+# Install Todoist
+info "Installing Todoist..."
+dnf install -y fuse fuse-libs
+TODOIST_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
+sudo -H -u "$SUDO_USER" curl -fL https://todoist.com/linux_app/appimage \
+    -o "$TODOIST_DIR/Todoist.AppImage"
+sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/.local/appimages"
+sudo -H -u "$SUDO_USER" env XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")" \
+    flatpak run --command=gsettings it.mijorus.gearlever \
+    set it.mijorus.gearlever appimages-default-folder "$USER_HOME/.local/appimages"
+sudo -H -u "$SUDO_USER" env XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")" \
+    flatpak run it.mijorus.gearlever \
+    --integrate "$TODOIST_DIR/Todoist.AppImage" --yes --replace
+sudo -H -u "$SUDO_USER" rm -rf -- "$TODOIST_DIR"
+success "Todoist installed."
 
 # ============================================================================
 # SYSTEM CONFIGURATION
