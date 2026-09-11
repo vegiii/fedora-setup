@@ -240,7 +240,7 @@ success "Plasma widgets installed."
 
 # Install the OpenRazer driver
 info "Installing OpenRazer..."
-dnf install -y kernel-devel
+dnf install -y kernel-devel "kernel-devel-$(uname -r)"
 if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
     dnf config-manager addrepo \
         --from-repofile=https://openrazer.github.io/hardware:razer.repo
