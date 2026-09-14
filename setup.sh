@@ -124,6 +124,7 @@ DNF_PACKAGES=(
     bash-color-prompt
     papirus-icon-theme
     plasma-lookandfeel-fedora
+    NetworkManager-config-connectivity-fedora
 
     # System tools
     gh
