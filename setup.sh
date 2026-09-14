@@ -133,7 +133,6 @@ DNF_PACKAGES=(
     tree
     wget
     micro
-    acl
     lm_sensors
     fastfetch
     input-remapper
@@ -364,6 +363,8 @@ success "System configuration complete."
 # ============================================================================
 
 section "VIRTUALIZATION CONFIGURATION"
+dnf install -y acl
+
 # Set up VM storage in ~/Documents/VMs
 info "Configuring libvirt storage pools..."
 # Enable libvirt and create storage folders
