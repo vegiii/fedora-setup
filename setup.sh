@@ -253,6 +253,7 @@ success "OpenRazer installed and $SUDO_USER added to plugdev."
 info "Installing Flatpak applications..."
 FLATPAK_APPS=(
     com.spotify.Client
+    de.haeckerfelix.Shortwave
     md.obsidian.Obsidian
     net.nokyan.Resources
     org.onlyoffice.desktopeditors
