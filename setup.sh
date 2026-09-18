@@ -238,17 +238,6 @@ sudo -H -u "$SUDO_USER" rsync -a --delete \
 sudo -H -u "$SUDO_USER" rm -rf -- "$WIDGET_DIR"
 success "Plasma widgets installed."
 
-# Install the OpenRazer driver
-info "Installing OpenRazer..."
-dnf install -y kernel-devel "kernel-devel-$(uname -r)"
-if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
-    dnf config-manager addrepo \
-        --from-repofile=https://openrazer.github.io/hardware:razer.repo
-fi
-dnf install -y openrazer-meta
-usermod -aG plugdev "$SUDO_USER"
-success "OpenRazer installed and $SUDO_USER added to plugdev."
-
 # Install Flatpak applications
 info "Installing Flatpak applications..."
 FLATPAK_APPS=(
@@ -261,7 +250,6 @@ FLATPAK_APPS=(
     com.github.tchx84.Flatseal
     com.vysp3r.ProtonPlus
     org.prismlauncher.PrismLauncher
-    xyz.z3ntu.razergenie
 )
 
 flatpak install -y flathub "${FLATPAK_APPS[@]}"
@@ -449,10 +437,29 @@ else
 fi
 
 # ============================================================================
-# NVIDIA DRIVER
+# DRIVER INSTALLATION
 # ============================================================================
 
-section "NVIDIA DRIVER"
+section "DRIVER INSTALLATION"
+# Install the OpenRazer driver and RazerGenie
+info "Install OpenRazer and RazerGenie? [Y/n]"
+if read -r OPENRAZER_REPLY &&
+    [[ -z $OPENRAZER_REPLY || ${OPENRAZER_REPLY,,} == y || ${OPENRAZER_REPLY,,} == yes ]]; then
+    info "Installing OpenRazer..."
+    dnf install -y kernel-devel "kernel-devel-$(uname -r)"
+    if [[ ! -f /etc/yum.repos.d/hardware:razer.repo ]]; then
+        dnf config-manager addrepo \
+            --from-repofile=https://openrazer.github.io/hardware:razer.repo
+    fi
+    dnf install -y openrazer-meta
+    usermod -aG plugdev "$SUDO_USER"
+    flatpak install -y flathub xyz.z3ntu.razergenie
+    success "OpenRazer and RazerGenie installed and $SUDO_USER added to plugdev."
+else
+    info "OpenRazer and RazerGenie installation skipped."
+fi
+
+# Install the NVIDIA driver
 info "Install NVIDIA driver? [Y/n]"
 if read -r NVIDIA_REPLY &&
     [[ -z $NVIDIA_REPLY || ${NVIDIA_REPLY,,} == y || ${NVIDIA_REPLY,,} == yes ]]; then
