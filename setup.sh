@@ -110,6 +110,7 @@ DNF_PACKAGES=(
     kwrite
 
     # KDE components
+    krdp
     plasma-nm
     bluedevil
     kio-admin
