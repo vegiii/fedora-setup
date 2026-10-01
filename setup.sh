@@ -327,9 +327,7 @@ sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
 sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
     --group AC --group Display --key TurnOffDisplayIdleTimeoutSec 600
 sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
-    --group AC --group SuspendAndShutdown --key AutoSuspendAction 1
-sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/powerdevilrc" \
-    --group AC --group SuspendAndShutdown --key AutoSuspendIdleTimeoutSec 10800
+    --group AC --group SuspendAndShutdown --key AutoSuspendAction 0
 
 success "System configuration complete."
 
