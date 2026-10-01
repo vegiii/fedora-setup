@@ -67,26 +67,13 @@ success "Firmware update checks completed."
 # ============================================================================
 
 section "SOFTWARE SOURCES"
-# Enable RPM Fusion
+# Enable RPM Fusion and install application metadata for Plasma Discover
 info "Enabling RPM Fusion repositories..."
 dnf install -y \
     "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
-success "RPM Fusion repositories enabled."
-
-# Install RPM Fusion application metadata for Plasma Discover
-info "Installing RPM Fusion application metadata..."
 dnf install -y 'rpmfusion-*-appstream-data'
-success "RPM Fusion application metadata installed."
-
-# Enable Terra repository
-info "Enabling Terra repository..."
-dnf install -y \
-    --repofrompath 'terra-bootstrap,https://repos.fyralabs.com/terra$releasever' \
-    --setopt='terra-bootstrap.gpgcheck=1' \
-    --setopt="terra-bootstrap.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" \
-    terra-release terra-gpg-keys
-success "Terra repository enabled."
+success "RPM Fusion repositories enabled."
 
 # Install Flatpak, remove the Fedora remote and configure Flathub
 info "Installing Flatpak and configuring Flathub..."
@@ -171,11 +158,6 @@ success "DNF packages installed."
 info "Installing multimedia and virtualization groups..."
 dnf install -y @multimedia @virtualization
 success "DNF groups installed."
-
-# Install Microsoft Core Fonts from Terra
-info "Installing Microsoft Core Fonts..."
-dnf install -y ms-core-fonts
-success "Microsoft Core Fonts installed."
 
 # Install Google Chrome
 info "Enabling the Google Chrome repository and installing Chrome..."
@@ -314,7 +296,7 @@ LOCALE_SETTINGS=(
 )
 localectl set-locale "${LOCALE_SETTINGS[@]}"
 
-# Apply the same formats to Plasma while preserving user ownership
+# Apply language settings to Plasma
 for setting in "${LOCALE_SETTINGS[@]}"; do
     sudo -H -u "$SUDO_USER" kwriteconfig6 --file "$USER_HOME/.config/plasma-localerc" \
         --group Formats --key "${setting%%=*}" "${setting#*=}"
