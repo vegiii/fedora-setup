@@ -4,7 +4,7 @@
 # INITIALIZATION
 # ============================================================================
 
-set -eE
+set -eE -o pipefail
 
 # Track total setup time
 SECONDS=0
@@ -74,6 +74,11 @@ dnf install -y \
     "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 success "RPM Fusion repositories enabled."
 
+# Install RPM Fusion application metadata for Plasma Discover
+info "Installing RPM Fusion application metadata..."
+dnf install -y 'rpmfusion-*-appstream-data'
+success "RPM Fusion application metadata installed."
+
 # Enable Terra repository
 info "Enabling Terra repository..."
 dnf install -y \
@@ -138,7 +143,6 @@ DNF_PACKAGES=(
     micro
     lm_sensors
     fastfetch
-    input-remapper
 
     # KDE applications
     ark
@@ -185,6 +189,16 @@ info "Installing TeamViewer..."
 dnf install -y \
     https://download.teamviewer.com/download/linux/teamviewer.x86_64.rpm
 success "TeamViewer installed."
+
+# Install Tailscale
+info "Installing Tailscale..."
+if [[ ! -f /etc/yum.repos.d/tailscale.repo ]]; then
+    dnf config-manager addrepo \
+        --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+fi
+dnf install -y tailscale
+systemctl enable --now tailscaled
+success "Tailscale installed. Run 'sudo tailscale up' to connect."
 
 # Install ChatGPT
 info "Installing ChatGPT..."
@@ -243,7 +257,7 @@ success "Plasma widgets installed."
 # Install Flatpak applications
 info "Installing Flatpak applications..."
 FLATPAK_APPS=(
-    com.spotify.Client
+    # Verified apps
     de.haeckerfelix.Shortwave
     md.obsidian.Obsidian
     net.nokyan.Resources
@@ -252,26 +266,13 @@ FLATPAK_APPS=(
     com.github.tchx84.Flatseal
     com.vysp3r.ProtonPlus
     org.prismlauncher.PrismLauncher
+    # Community packages
+    com.spotify.Client
+    com.todoist.Todoist
 )
 
 flatpak install -y flathub "${FLATPAK_APPS[@]}"
 success "Flatpak applications installed."
-
-# Install Todoist
-info "Installing Todoist..."
-dnf install -y fuse fuse-libs
-TODOIST_DIR=$(sudo -H -u "$SUDO_USER" mktemp -d)
-sudo -H -u "$SUDO_USER" curl -fL https://todoist.com/linux_app/appimage \
-    -o "$TODOIST_DIR/Todoist.AppImage"
-sudo -H -u "$SUDO_USER" mkdir -p "$USER_HOME/.local/appimages"
-sudo -H -u "$SUDO_USER" env XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")" \
-    flatpak run --command=gsettings it.mijorus.gearlever \
-    set it.mijorus.gearlever appimages-default-folder "$USER_HOME/.local/appimages"
-sudo -H -u "$SUDO_USER" env XDG_RUNTIME_DIR="/run/user/$(id -u "$SUDO_USER")" \
-    flatpak run it.mijorus.gearlever \
-    --integrate "$TODOIST_DIR/Todoist.AppImage" --yes --replace
-sudo -H -u "$SUDO_USER" rm -rf -- "$TODOIST_DIR"
-success "Todoist installed."
 
 # ============================================================================
 # SYSTEM CONFIGURATION
