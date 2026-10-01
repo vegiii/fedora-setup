@@ -43,8 +43,8 @@ USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
 
 section "SYSTEM SETUP"
 # Set hostname
-info "Setting hostname to fedora..."
-hostnamectl set-hostname fedora
+read -r -e -i "fedora" -p "Hostname: " HOSTNAME_REPLY
+hostnamectl set-hostname "${HOSTNAME_REPLY:-fedora}"
 success "Hostname configured."
 
 # Configure DNF
