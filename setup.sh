@@ -141,6 +141,8 @@ DNF_PACKAGES=(
     spectacle
     plasma-discover
     kde-partitionmanager
+    libreoffice-calc
+    libreoffice-writer
 
     # Applications
     firefox
@@ -243,9 +245,6 @@ FLATPAK_APPS=(
     de.haeckerfelix.Shortwave
     md.obsidian.Obsidian
     net.nokyan.Resources
-    org.onlyoffice.desktopeditors
-    it.mijorus.gearlever
-    com.github.tchx84.Flatseal
     com.vysp3r.ProtonPlus
     org.prismlauncher.PrismLauncher
     # Community packages
