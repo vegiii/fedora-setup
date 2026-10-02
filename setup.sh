@@ -239,7 +239,7 @@ success "Plasma widgets installed."
 # Install Flatpak applications
 info "Installing Flatpak applications..."
 FLATPAK_APPS=(
-    # Verified apps
+    # Verified packages
     de.haeckerfelix.Shortwave
     md.obsidian.Obsidian
     net.nokyan.Resources
