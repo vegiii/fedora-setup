@@ -246,6 +246,7 @@ FLATPAK_APPS=(
     md.obsidian.Obsidian
     net.nokyan.Resources
     com.vysp3r.ProtonPlus
+    it.mijorus.gearlever
     org.prismlauncher.PrismLauncher
     # Community packages
     com.spotify.Client
