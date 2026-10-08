@@ -93,31 +93,25 @@ section "SOFTWARE INSTALLATION"
 # Install DNF packages
 info "Installing DNF packages..."
 DNF_PACKAGES=(
-    # Core KDE Plasma
+    # KDE desktop
     plasma-desktop
     plasma-login-manager
-    kscreen
-    konsole
-    dolphin
-    kwrite
-
-    # KDE components
-    krdp
-    krdc
     plasma-nm
-    bluedevil
-    kio-admin
-    kde-gtk-config
-    kio-extras
     plasma-discover-flatpak
-    libappindicator-gtk3
-    libayatana-appindicator-gtk3
-    langpacks-nb
-    pam-kwallet
     plasma-workspace-wallpapers
+    plasma-lookandfeel-fedora
+    plasma-discover
+    kscreen
+    bluedevil
+    pam-kwallet
+    kde-gtk-config
+    kio-admin
+    kio-extras
+    langpacks-nb
     bash-color-prompt
     papirus-icon-theme
-    plasma-lookandfeel-fedora
+    libappindicator-gtk3
+    libayatana-appindicator-gtk3
     NetworkManager-config-connectivity-fedora
 
     # System tools
@@ -132,6 +126,11 @@ DNF_PACKAGES=(
     fastfetch
 
     # KDE applications
+    konsole
+    dolphin
+    kwrite
+    krdp
+    krdc
     ark
     okular
     kcalc
@@ -139,12 +138,11 @@ DNF_PACKAGES=(
     filelight
     gwenview
     spectacle
-    plasma-discover
     kde-partitionmanager
-    libreoffice-calc
-    libreoffice-writer
 
     # Applications
+    libreoffice-calc
+    libreoffice-writer
     firefox
     thunderbird
     steam
@@ -155,6 +153,24 @@ DNF_PACKAGES=(
 
 dnf install -y "${DNF_PACKAGES[@]}"
 success "DNF packages installed."
+
+# Install Flatpak applications
+info "Installing Flatpak applications..."
+FLATPAK_APPS=(
+    # Verified packages
+    de.haeckerfelix.Shortwave
+    md.obsidian.Obsidian
+    net.nokyan.Resources
+    com.vysp3r.ProtonPlus
+    it.mijorus.gearlever
+    org.prismlauncher.PrismLauncher
+    # Community packages
+    com.spotify.Client
+    com.todoist.Todoist
+)
+
+flatpak install -y flathub "${FLATPAK_APPS[@]}"
+success "Flatpak applications installed."
 
 # Install DNF groups
 info "Installing multimedia and virtualization groups..."
@@ -237,24 +253,6 @@ sudo -H -u "$SUDO_USER" rsync -a --delete \
 # Remove temporary downloads
 sudo -H -u "$SUDO_USER" rm -rf -- "$WIDGET_DIR"
 success "Plasma widgets installed."
-
-# Install Flatpak applications
-info "Installing Flatpak applications..."
-FLATPAK_APPS=(
-    # Verified packages
-    de.haeckerfelix.Shortwave
-    md.obsidian.Obsidian
-    net.nokyan.Resources
-    com.vysp3r.ProtonPlus
-    it.mijorus.gearlever
-    org.prismlauncher.PrismLauncher
-    # Community packages
-    com.spotify.Client
-    com.todoist.Todoist
-)
-
-flatpak install -y flathub "${FLATPAK_APPS[@]}"
-success "Flatpak applications installed."
 
 # ============================================================================
 # SYSTEM CONFIGURATION
